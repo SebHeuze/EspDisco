@@ -223,7 +223,7 @@ public class ESPDiscoFragment extends Fragment{
                     blue = 255;
                 }
                 int color = Color.argb(255, (int) red, (int) green, (int) blue);
-                EspManager.getInstance().changeColor((int) red, (int) green, (int) blue);
+                EspManager.getInstance().changeAllColor((int) red, (int) green, (int) blue);
                 ledView.changeColor(color);
                 break;
         }
