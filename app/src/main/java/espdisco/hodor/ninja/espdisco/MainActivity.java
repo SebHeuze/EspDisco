@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import espdisco.hodor.ninja.espdisco.dao.EspBDD;
 import espdisco.hodor.ninja.espdisco.enums.LEDMode;
 import espdisco.hodor.ninja.espdisco.fragment.ESPDiscoFragment;
 import espdisco.hodor.ninja.espdisco.fragment.ESPListFragment;
@@ -55,6 +56,9 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
+
+    private EspBDD bdd;
+
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -70,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+        //Création d'une instance de ma bdd
+        bdd = new EspBDD(this);
+        bdd.open();
+
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -79,6 +87,9 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(adapter);
     }
 
+    public EspBDD getBdd(){
+        return bdd;
+    }
 
 
     public MainActivity() {

@@ -31,6 +31,12 @@ public class EspArrayAdapter extends ArrayAdapter<Esp8266> {
     }
 
     @Override
+    public Esp8266 getItem(int position){
+
+        return list.get(position);
+    }
+
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = null;
         if (convertView == null) {
@@ -39,6 +45,31 @@ public class EspArrayAdapter extends ArrayAdapter<Esp8266> {
             final ViewHolder viewHolder = new ViewHolder();
             viewHolder.text = (TextView) view.findViewById(R.id.label);
             viewHolder.text.setTextColor(Color.BLACK);
+            /*ColorPickerDialogBuilder
+                .with(MainActivity.this)
+                .setTitle("Choose color")
+                .initialColor(Color.RED)
+                .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                .density(12)
+                .setOnColorSelectedListener(new OnColorSelectedListener() {
+                    @Override
+                    public void onColorSelected(int selectedColor) {
+                        //toast("onColorSelected: 0x" + Integer.toHexString(selectedColor));
+                    }
+                })
+                .setPositiveButton("ok", new ColorPickerClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                        //changeBackgroundColor(selectedColor);
+                    }
+                })
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .build()
+                .show();*/
             viewHolder.sub = (TextView) view.findViewById(R.id.sub);
             viewHolder.sub.setTextColor(Color.GRAY);
             viewHolder.checkbox = (CheckBox) view.findViewById(R.id.check);
@@ -49,6 +80,7 @@ public class EspArrayAdapter extends ArrayAdapter<Esp8266> {
                                                      boolean isChecked) {
                             Esp8266 element = (Esp8266) viewHolder.checkbox.getTag();
                             element.setSelected(buttonView.isChecked());
+                            ((MainActivity)context).getBdd().setSelected(element);
                             System.out.println("Checked : " + element.getIpAdress());
                         }
                     });

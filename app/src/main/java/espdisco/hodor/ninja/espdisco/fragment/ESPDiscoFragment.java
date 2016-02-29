@@ -1,5 +1,6 @@
 package espdisco.hodor.ninja.espdisco.fragment;
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -17,13 +18,21 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.flask.colorpicker.ColorPickerView;
+import com.flask.colorpicker.OnColorSelectedListener;
+import com.flask.colorpicker.builder.ColorPickerClickListener;
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
+
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 import espdisco.hodor.ninja.espdisco.EspApplication;
 import espdisco.hodor.ninja.espdisco.LedView;
+import espdisco.hodor.ninja.espdisco.MainActivity;
 import espdisco.hodor.ninja.espdisco.R;
 import espdisco.hodor.ninja.espdisco.enums.LEDMode;
+import espdisco.hodor.ninja.espdisco.model.Esp8266;
 import espdisco.hodor.ninja.espdisco.utils.EspManager;
 
 public class ESPDiscoFragment extends Fragment{
@@ -31,6 +40,8 @@ public class ESPDiscoFragment extends Fragment{
     private static final String LOG_TAG = "ESPDiscoFragment";
 
     private static String mFileName = null;
+
+    private int monoColor = -16776961; //Bleu par défaut
 
     private boolean recording;
     private Handler handler;
@@ -104,6 +115,36 @@ public class ESPDiscoFragment extends Fragment{
             }
         });
 
+        ledView.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                ColorPickerDialogBuilder
+                        .with(getActivity())
+                        .setTitle("Choose color")
+                        .initialColor(Color.RED)
+                        .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                        .density(12)
+                        .setOnColorSelectedListener(new OnColorSelectedListener() {
+                            @Override
+                            public void onColorSelected(int selectedColor) {
+                            }
+                        })
+                        .setPositiveButton("ok", new ColorPickerClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                                monoColor = selectedColor;
+                                ledView.changeColor(monoColor);
+                            }
+                        })
+                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .build()
+                        .show();
+            }
+        });
+
         discoButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (recording) {
@@ -148,35 +189,10 @@ public class ESPDiscoFragment extends Fragment{
         recording = true;
         mRecorder.start();
 
-        /*ColorPickerDialogBuilder
-                .with(MainActivity.this)
-                .setTitle("Choose color")
-                .initialColor(Color.RED)
-                .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
-                .density(12)
-                .setOnColorSelectedListener(new OnColorSelectedListener() {
-                    @Override
-                    public void onColorSelected(int selectedColor) {
-                        //toast("onColorSelected: 0x" + Integer.toHexString(selectedColor));
-                    }
-                })
-                .setPositiveButton("ok", new ColorPickerClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                        //changeBackgroundColor(selectedColor);
-                    }
-                })
-                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                })
-                .build()
-                .show();*/
 
         handler = new Handler();
-
-        EspManager.getInstance().init();
+        List<Esp8266> espList = ((MainActivity)getActivity()).getBdd().getCheckedEsp();
+        EspManager.getInstance().init(espList);
 
         final Runnable r = new Runnable() {
             public void run() {
@@ -210,18 +226,20 @@ public class ESPDiscoFragment extends Fragment{
                 }
                 break;
             case SINGLE_COLOR:
-                Log.d(LOG_TAG, "Amplitude " + amplitude);
-                Log.d(LOG_TAG, "seekBar.getProgress" + seekBar.getProgress());
+                //Log.d(LOG_TAG, "Amplitude " + amplitude);
+                //Log.d(LOG_TAG, "seekBar.getProgress" + seekBar.getProgress());
                 double blue = 0;
+                double red = 0;
+                double green = 0;
                 if (amplitude > seekBar.getProgress()) {
-                    blue = 255.0 * (((double) amplitude - (double) seekBar.getProgress()) / (double) seekBar.getProgress());
+                    blue = (monoColor & 255) * (((double) amplitude - (double) seekBar.getProgress()) / (double) seekBar.getProgress());
+                    green = ((monoColor >> 8) & 255) * (((double) amplitude - (double) seekBar.getProgress()) / (double) seekBar.getProgress());
+                    red = ((monoColor >> 16) & 255) * (((double) amplitude - (double) seekBar.getProgress()) / (double) seekBar.getProgress());
                 }
-                int red = 0;
-                int green = 0;
+                red = (red > 255)?255:red;
+                green = (green > 255)?255:green;
+                blue = (blue > 255)?255:blue;
 
-                if (blue > 255) {
-                    blue = 255;
-                }
                 int color = Color.argb(255, (int) red, (int) green, (int) blue);
                 EspManager.getInstance().changeAllColor((int) red, (int) green, (int) blue);
                 ledView.changeColor(color);

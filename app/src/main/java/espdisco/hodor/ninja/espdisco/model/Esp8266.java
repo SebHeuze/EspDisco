@@ -3,13 +3,11 @@ package espdisco.hodor.ninja.espdisco.model;
 public class Esp8266 {
 
     private String ipAdress;
-    private String name;
     private boolean selected;
 
-    public Esp8266(String ipAdress, String name) {
+    public Esp8266(String ipAdress,boolean selected) {
         this.ipAdress = ipAdress;
-        this.name = name;
-        this.selected = true;
+        this.selected = selected;
     }
 
     public String getIpAdress() {
@@ -28,12 +26,5 @@ public class Esp8266 {
         this.selected = selected;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
 }
